@@ -170,12 +170,12 @@ A retrieval-augmented chatbot that answers questions over live RSS/changelog fee
 ## 📊 GitHub Stats & Activity
 
 <div align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=sahilkalgutkar&show_icons=true&theme=default&hide_border=true&count_private=true&title_color=3584E4&icon_color=3584E4" width="49%" alt="Sahil's GitHub stats" />
+  <img src="https://sahil-github-readme-stats.vercel.app/api?username=sahilkalgutkar&show_icons=true&theme=default&hide_border=true&count_private=true&title_color=3584E4&icon_color=3584E4" width="49%" alt="Sahil's GitHub stats" />
   <img src="https://github-readme-streak-stats.herokuapp.com?user=sahilkalgutkar&hide_border=true&background=FFFFFF00&ring=3584E4&fire=3584E4&currStreakLabel=3584E4" width="49%" alt="Sahil's GitHub streak stats" />
 </div>
 
 <div align="center">
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=sahilkalgutkar&layout=compact&hide_border=true&title_color=3584E4&langs_count=8" width="49%" alt="Top languages" />
+  <img src="https://sahil-github-readme-stats.vercel.app/api/top-langs/?username=sahilkalgutkar&layout=compact&hide_border=true&title_color=3584E4&langs_count=8" width="49%" alt="Top languages" />
 </div>
 
 <div align="center">
