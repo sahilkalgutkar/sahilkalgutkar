@@ -10,6 +10,18 @@
 [![Email](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:sahilkal717@gmail.com)
 [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sahilkalgutkar)
 
+<p>
+  <a href="https://github.com/sahilkalgutkar?tab=followers">
+    <img src="https://img.shields.io/github/followers/sahilkalgutkar?label=Followers&style=social" alt="GitHub followers" />
+  </a>
+  <a href="https://github.com/sahilkalgutkar?tab=repositories&sort=stargazers">
+    <img src="https://img.shields.io/github/stars/sahilkalgutkar?style=social" alt="GitHub stars" />
+  </a>
+  <a href="https://github.com/sahilkalgutkar">
+    <img src="https://komarev.com/ghpvc/?username=sahilkalgutkar&label=Profile%20Views&base=0&color=3584e4&style=flat" alt="Profile views" />
+  </a>
+</p>
+
 </div>
 
 ---
@@ -106,6 +118,9 @@ Software Engineer, Production Support — Infosys                  Aug 2019 – 
 ## 📌 Featured Projects
 
 ### [PipelineOps](https://github.com/sahilkalgutkar/PipelineOps) — Polyglot job-monitoring & alerting platform
+[![CI](https://github.com/sahilkalgutkar/PipelineOps/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/PipelineOps/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/PipelineOps/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/PipelineOps)
+
 A dead-man's-switch monitoring platform for scheduled/batch jobs, built across three services chosen for what each does best: a **React/TypeScript** dashboard, a **Django REST Framework** API, and a **Go/Gin** heartbeat-ingestion service.
 - Concurrent heartbeat ingestion in Go with context timeouts, structured logging, and Prometheus metrics
 - Replaced localStorage token auth with httpOnly session cookies + CSRF protection, closing an XSS token-theft vector
@@ -113,6 +128,9 @@ A dead-man's-switch monitoring platform for scheduled/batch jobs, built across t
 - `React · TypeScript · Django · Go · Gin · PostgreSQL · Redis · Celery · Docker · Kubernetes`
 
 ### [SplitEasy](https://github.com/sahilkalgutkar/expense-splitter) — Expense-splitting app with automated settle-up
+[![CI](https://github.com/sahilkalgutkar/expense-splitter/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/expense-splitter/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/expense-splitter/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/expense-splitter)
+
 A group expense-splitting app (**NestJS/Prisma** API, **React/TypeScript** frontend) supporting recurring expenses, invites, and multi-type splits (equal, exact, percentage).
 - Minimum-cash-flow settle-up algorithm built from scratch with a binary max-heap
 - Refresh-token auth: short-lived JWT in memory + hashed refresh token in an httpOnly cookie
@@ -120,8 +138,21 @@ A group expense-splitting app (**NestJS/Prisma** API, **React/TypeScript** front
 - `React · TypeScript · NestJS · Prisma · PostgreSQL · Jest · Vitest · GitHub Actions · Docker`
 
 ### [Portfolio](https://github.com/sahilkalgutkar/portfolio) — Personal site backed by a self-hosted GraphQL API
+[![CI](https://github.com/sahilkalgutkar/portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/portfolio/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/portfolio/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/portfolio)
+
 Next.js (App Router) site serving project data through an Apollo Server route handler backed by Supabase, with a seed-data fallback so it runs fully offline.
 - `Next.js · Apollo Server · Supabase · Tailwind CSS · GitHub Actions · Vercel`
+
+### [DigestBot](https://github.com/sahilkalgutkar/digest-bot) — RAG chatbot over a rolling window of RSS/changelog feeds
+[![CI](https://github.com/sahilkalgutkar/digest-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/digest-bot/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/digest-bot/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/digest-bot)
+
+A retrieval-augmented chatbot that answers questions over live RSS/changelog feeds instead of a static corpus — built to explore the parts of RAG most tutorials skip: freshness, dedup, and incremental indexing.
+- Hybrid retrieval blending vector similarity with a recency-decay weight, so answers favor fresh articles without ignoring older ones
+- Forced citations on every generated answer, checked against a hand-built evaluation set to catch regressions
+- Incremental ingestion pipeline: poll → dedup by GUID/URL → chunk → embed → index, run continuously against a rolling feed window
+- `Python · RAG · Vector Search · Anthropic · pytest · GitHub Actions`
 
 ---
 
@@ -136,10 +167,26 @@ Next.js (App Router) site serving project data through an Apollo Server route ha
 
 ---
 
-<div align="center">
+## 📊 GitHub Stats & Activity
 
-![GitHub Stats](https://github-readme-stats.vercel.app/api?username=sahilkalgutkar&show_icons=true&theme=default&hide_border=true&count_private=true)
-![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=sahilkalgutkar&layout=compact&hide_border=true)
+<div align="center">
+  <img src="https://github-readme-stats.vercel.app/api?username=sahilkalgutkar&show_icons=true&theme=default&hide_border=true&count_private=true&title_color=3584E4&icon_color=3584E4" width="49%" alt="Sahil's GitHub stats" />
+  <img src="https://github-readme-streak-stats.herokuapp.com?user=sahilkalgutkar&hide_border=true&background=FFFFFF00&ring=3584E4&fire=3584E4&currStreakLabel=3584E4" width="49%" alt="Sahil's GitHub streak stats" />
+</div>
+
+<div align="center">
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=sahilkalgutkar&layout=compact&hide_border=true&title_color=3584E4&langs_count=8" width="49%" alt="Top languages" />
+</div>
+
+<div align="center">
+  <img src="https://github-readme-activity-graph.vercel.app/graph?username=sahilkalgutkar&bg_color=ffffff&color=3584E4&line=3584E4&point=222222&hide_border=true&area=true" width="98%" alt="Sahil's contribution activity graph" />
+</div>
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/sahilkalgutkar/sahilkalgutkar/output/github-contribution-grid-snake.svg" alt="Contribution snake animation" width="98%" />
+</div>
+
+<div align="center">
 
 📫 Reach me at **sahilkal717@gmail.com** or on [LinkedIn](https://linkedin.com/in/kalgutkarsahil)
 
