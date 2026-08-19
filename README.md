@@ -154,6 +154,16 @@ A retrieval-augmented chatbot that answers questions over live RSS/changelog fee
 - Incremental ingestion pipeline: poll → dedup by GUID/URL → chunk → embed → index, run continuously against a rolling feed window
 - `Python · RAG · Vector Search · Anthropic · pytest · GitHub Actions`
 
+### [Risk Signal Platform](https://github.com/sahilkalgutkar/risk-signal-platform) — Event-driven transaction risk-scoring platform
+[![CI](https://github.com/sahilkalgutkar/risk-signal-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/risk-signal-platform/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/risk-signal-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/risk-signal-platform)
+
+Three **Spring Boot** services (transaction-api, risk-scoring-service, alert-service) that talk to each other only through **Kafka**, each owning its own **MySQL** database, with a full observability stack (Prometheus/Grafana, ELK) actually wired up and working.
+- Kafka-native retry/DLT for failed alert dispatch via `@RetryableTopic`, verified by forcing a failure and asserting it lands on the dead-letter topic
+- A real custom Micrometer business metric (`risk_scores_total`) driving the main Grafana dashboard panel, not just generic JVM stats
+- Idempotent, durable-write-then-best-effort-publish event handling across all three services, backed by Testcontainers integration tests
+- `Java · Spring Boot · Kafka · MySQL · Flyway · Prometheus · Grafana · Elasticsearch · Kibana · Docker · Kubernetes`
+
 ---
 
 ## 🎓 Certifications & Education
