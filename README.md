@@ -164,6 +164,26 @@ Three **Spring Boot** services (transaction-api, risk-scoring-service, alert-ser
 - Idempotent, durable-write-then-best-effort-publish event handling across all three services, backed by Testcontainers integration tests
 - `Java · Spring Boot · Kafka · MySQL · Flyway · Prometheus · Grafana · Elasticsearch · Kibana · Docker · Kubernetes`
 
+### [Order Processing Platform](https://github.com/sahilkalgutkar/order-processing-platform) — Event-driven order processing on Go
+[![CI](https://github.com/sahilkalgutkar/order-processing-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/order-processing-platform/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/order-processing-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/order-processing-platform)
+
+A REST API (**order-service**) that persists to **Postgres** and publishes to **SNS**, fanning out over independent **SQS** queues to two consumers — one writing reservations to **MongoDB**, one logging simulated notifications — neither aware the other exists.
+- Handler tests run against interfaces the code defines itself (`OrderStore`/`EventPublisher`), not concrete Postgres/SNS types — zero network calls, including a test asserting a publish failure still returns 201
+- Raw SNS→SQS delivery and at-least-once handling: consumers only delete their SQS message after the write succeeds
+- Terraform for the AWS ECS Fargate path (reusable service module + least-privilege IAM); Docker Compose with LocalStack for local dev
+- `Go · PostgreSQL · MongoDB · AWS SNS · AWS SQS · Terraform · Docker Compose · Prometheus · GitHub Actions`
+
+### [gRPC Catalog Platform](https://github.com/sahilkalgutkar/grpc-catalog-platform) — Two Go services over gRPC and REST from one implementation
+[![CI](https://github.com/sahilkalgutkar/grpc-catalog-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/grpc-catalog-platform/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/grpc-catalog-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/grpc-catalog-platform)
+
+**catalog-service** serves one `ProductService` implementation over both native gRPC and REST (via an in-process **grpc-gateway** mount, no self-loopback network hop), calling **pricing-service**'s internal-only `PricingService` over gRPC for quantity-based pricing.
+- Both services share generated code from one `buf`-managed proto module so the wire contract can't drift between them
+- Request-ID propagation across the gRPC boundary so both services' logs correlate for one end-to-end request
+- Tests run the gRPC server on an in-memory `bufconn` listener, including a fake `PricingServiceServer` double for testing the cross-service call without a real network
+- `Go · gRPC · Protocol Buffers · grpc-gateway · buf · Docker Compose · GitHub Actions`
+
 ---
 
 ## 🎓 Certifications & Education
