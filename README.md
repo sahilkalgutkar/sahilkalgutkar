@@ -117,6 +117,17 @@ Software Engineer, Production Support — Infosys                  Aug 2019 – 
 
 ## 📌 Featured Projects
 
+### [raftlite](https://github.com/sahilkalgutkar/raftlite) — Raft consensus implemented from scratch in Go
+[![CI](https://github.com/sahilkalgutkar/raftlite/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/raftlite/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/raftlite/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/raftlite)
+
+I built the Raft consensus algorithm from the paper — elections, log replication, snapshots, dynamic membership — and put a replicated key-value store on top, with **no third-party dependencies**: the wire codec, the write-ahead log and the metrics registry are all hand-written.
+- The algorithm is a pure state machine with no sockets, files or clock, so elections, log repair and snapshot installation are tested deterministically instead of by racing real processes
+- Pre-vote and a leader lease, with paired tests running the same partition both ways: with them an isolated node's term never moves, without them it climbs without bound and disrupts a healthy cluster on return
+- A chaos suite runs real nodes against real directories through random crashes, restarts and partitions, asserting one invariant — around 5,000 acknowledged writes across 40 rounds of failures, none lost
+- Two bugs only real sockets could find: a message field threaded through the algorithm but never encoded, and a lost snapshot stranding a follower forever — both fixed with tests that fail without the fix
+- `Go · Raft · Distributed Systems · Custom Binary Protocol · Prometheus · Docker Compose · GitHub Actions`
+
 ### [PipelineOps](https://github.com/sahilkalgutkar/PipelineOps) — Polyglot job-monitoring & alerting platform
 [![CI](https://github.com/sahilkalgutkar/PipelineOps/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/PipelineOps/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/PipelineOps/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/PipelineOps)
