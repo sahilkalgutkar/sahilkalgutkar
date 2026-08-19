@@ -194,6 +194,17 @@ I built **catalog-service** to serve one `ProductService` implementation over bo
 - Tests run the gRPC server on an in-memory `bufconn` listener, including a fake `PricingServiceServer` double for testing the cross-service call without a real network
 - `Go · gRPC · Protocol Buffers · grpc-gateway · buf · Docker Compose · GitHub Actions`
 
+### [Ledger Strangler Platform](https://github.com/sahilkalgutkar/ledger-strangler-platform) — Legacy monolith strangled into microservices behind a YARP facade
+[![CI](https://github.com/sahilkalgutkar/ledger-strangler-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/ledger-strangler-platform/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/ledger-strangler-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/ledger-strangler-platform)
+
+I built a legacy core-banking monolith and strangled it into microservices one route at a time behind a **YARP** facade — **AccountsService** (Cassandra-backed) is already peeled off, Statements deliberately isn't yet, and I left that gap honest instead of faking a seamless migration.
+- Balance updates go through a Cassandra lightweight transaction with jittered backoff, verified under real concurrent writers, not just the happy path
+- `NotificationsService` reacts to a RabbitMQ event the legacy code was never able to produce — the first behavior that only exists because of the migration
+- Serilog → Filebeat → Logstash → Elasticsearch → Kibana across all four services; Terraform for AKS/ACR, ArgoCD watching the manifests directly for GitOps deploys
+- Shipped with a real git-flow history — feature branches merged via PR, a tagged release, and two hotfixes for issues found while testing and in CI, not one commit on main
+- `C# · .NET Core · YARP · PostgreSQL · Cassandra · RabbitMQ · Serilog · ELK Stack · Terraform · Kubernetes · ArgoCD · GitHub Actions`
+
 ---
 
 ## 🎓 Certifications & Education
