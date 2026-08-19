@@ -121,7 +121,7 @@ Software Engineer, Production Support — Infosys                  Aug 2019 – 
 [![CI](https://github.com/sahilkalgutkar/PipelineOps/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/PipelineOps/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/PipelineOps/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/PipelineOps)
 
-A dead-man's-switch monitoring platform for scheduled/batch jobs, built across three services chosen for what each does best: a **React/TypeScript** dashboard, a **Django REST Framework** API, and a **Go/Gin** heartbeat-ingestion service.
+I built a dead-man's-switch monitoring platform for scheduled/batch jobs, across three services I chose for what each does best: a **React/TypeScript** dashboard, a **Django REST Framework** API, and a **Go/Gin** heartbeat-ingestion service.
 - Concurrent heartbeat ingestion in Go with context timeouts, structured logging, and Prometheus metrics
 - Replaced localStorage token auth with httpOnly session cookies + CSRF protection, closing an XSS token-theft vector
 - CI across all three services (lint + tests on every push), Docker Compose locally, Kubernetes manifests for EKS
@@ -131,7 +131,7 @@ A dead-man's-switch monitoring platform for scheduled/batch jobs, built across t
 [![CI](https://github.com/sahilkalgutkar/kvforge/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/kvforge/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/kvforge/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/kvforge)
 
-A Redis-shaped storage engine — RESP-inspired wire protocol, TTLs, an append-only log for crash durability — built on nothing but the standard library and tokio, to understand a key-value store from the network layer down rather than wrap an existing one.
+I built a Redis-shaped storage engine — RESP-inspired wire protocol, TTLs, an append-only log for crash durability — on nothing but the standard library and tokio, to understand a key-value store from the network layer down rather than wrap an existing one.
 - The AOF durability format reuses the wire protocol itself: each logged write is the same bytes a client would send, so the streaming decoder doubles as the replay parser and a crash mid-write naturally stops replay at the last whole command
 - Async tokio TCP server handling concurrent connections against one shared store; verified end-to-end by running a real server, writing over a real socket, killing it, and confirming a second server replays the data back
 - `kvforge-cli` (REPL + one-shot modes) routes every command through the exact same parser the server uses, so client and server can't drift apart on what a command means
@@ -141,7 +141,7 @@ A Redis-shaped storage engine — RESP-inspired wire protocol, TTLs, an append-o
 [![CI](https://github.com/sahilkalgutkar/expense-splitter/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/expense-splitter/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/expense-splitter/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/expense-splitter)
 
-A group expense-splitting app (**NestJS/Prisma** API, **React/TypeScript** frontend) supporting recurring expenses, invites, and multi-type splits (equal, exact, percentage).
+I built a group expense-splitting app (**NestJS/Prisma** API, **React/TypeScript** frontend) supporting recurring expenses, invites, and multi-type splits (equal, exact, percentage).
 - Minimum-cash-flow settle-up algorithm built from scratch with a binary max-heap
 - Refresh-token auth: short-lived JWT in memory + hashed refresh token in an httpOnly cookie
 - End-to-end test suite (Supertest against real Postgres in CI) plus unit tests across every service
@@ -151,14 +151,14 @@ A group expense-splitting app (**NestJS/Prisma** API, **React/TypeScript** front
 [![CI](https://github.com/sahilkalgutkar/portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/portfolio/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/portfolio/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/portfolio)
 
-Next.js (App Router) site serving project data through an Apollo Server route handler backed by Supabase, with a seed-data fallback so it runs fully offline.
+I built this site itself on Next.js (App Router), serving project data through an Apollo Server route handler backed by Supabase, with a seed-data fallback so it runs fully offline.
 - `Next.js · Apollo Server · Supabase · Tailwind CSS · GitHub Actions · Vercel`
 
 ### [DigestBot](https://github.com/sahilkalgutkar/digest-bot) — RAG chatbot over a rolling window of RSS/changelog feeds
 [![CI](https://github.com/sahilkalgutkar/digest-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/digest-bot/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/digest-bot/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/digest-bot)
 
-A retrieval-augmented chatbot that answers questions over live RSS/changelog feeds instead of a static corpus — built to explore the parts of RAG most tutorials skip: freshness, dedup, and incremental indexing.
+I built a retrieval-augmented chatbot that answers questions over live RSS/changelog feeds instead of a static corpus, to explore the parts of RAG most tutorials skip: freshness, dedup, and incremental indexing.
 - Hybrid retrieval blending vector similarity with a recency-decay weight, so answers favor fresh articles without ignoring older ones
 - Forced citations on every generated answer, checked against a hand-built evaluation set to catch regressions
 - Incremental ingestion pipeline: poll → dedup by GUID/URL → chunk → embed → index, run continuously against a rolling feed window
@@ -168,7 +168,7 @@ A retrieval-augmented chatbot that answers questions over live RSS/changelog fee
 [![CI](https://github.com/sahilkalgutkar/risk-signal-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/risk-signal-platform/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/risk-signal-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/risk-signal-platform)
 
-Three **Spring Boot** services (transaction-api, risk-scoring-service, alert-service) that talk to each other only through **Kafka**, each owning its own **MySQL** database, with a full observability stack (Prometheus/Grafana, ELK) actually wired up and working.
+I built three **Spring Boot** services (transaction-api, risk-scoring-service, alert-service) that talk to each other only through **Kafka**, each owning its own **MySQL** database, with a full observability stack (Prometheus/Grafana, ELK) actually wired up and working.
 - Kafka-native retry/DLT for failed alert dispatch via `@RetryableTopic`, verified by forcing a failure and asserting it lands on the dead-letter topic
 - A real custom Micrometer business metric (`risk_scores_total`) driving the main Grafana dashboard panel, not just generic JVM stats
 - Idempotent, durable-write-then-best-effort-publish event handling across all three services, backed by Testcontainers integration tests
@@ -178,7 +178,7 @@ Three **Spring Boot** services (transaction-api, risk-scoring-service, alert-ser
 [![CI](https://github.com/sahilkalgutkar/order-processing-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/order-processing-platform/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/order-processing-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/order-processing-platform)
 
-A REST API (**order-service**) that persists to **Postgres** and publishes to **SNS**, fanning out over independent **SQS** queues to two consumers — one writing reservations to **MongoDB**, one logging simulated notifications — neither aware the other exists.
+I built a REST API (**order-service**) that persists to **Postgres** and publishes to **SNS**, fanning out over independent **SQS** queues to two consumers — one writing reservations to **MongoDB**, one logging simulated notifications — neither aware the other exists.
 - Handler tests run against interfaces the code defines itself (`OrderStore`/`EventPublisher`), not concrete Postgres/SNS types — zero network calls, including a test asserting a publish failure still returns 201
 - Raw SNS→SQS delivery and at-least-once handling: consumers only delete their SQS message after the write succeeds
 - Terraform for the AWS ECS Fargate path (reusable service module + least-privilege IAM); Docker Compose with LocalStack for local dev
@@ -188,7 +188,7 @@ A REST API (**order-service**) that persists to **Postgres** and publishes to **
 [![CI](https://github.com/sahilkalgutkar/grpc-catalog-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/grpc-catalog-platform/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/grpc-catalog-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/grpc-catalog-platform)
 
-**catalog-service** serves one `ProductService` implementation over both native gRPC and REST (via an in-process **grpc-gateway** mount, no self-loopback network hop), calling **pricing-service**'s internal-only `PricingService` over gRPC for quantity-based pricing.
+I built **catalog-service** to serve one `ProductService` implementation over both native gRPC and REST (via an in-process **grpc-gateway** mount, no self-loopback network hop), calling **pricing-service**'s internal-only `PricingService` over gRPC for quantity-based pricing.
 - Both services share generated code from one `buf`-managed proto module so the wire contract can't drift between them
 - Request-ID propagation across the gRPC boundary so both services' logs correlate for one end-to-end request
 - Tests run the gRPC server on an in-memory `bufconn` listener, including a fake `PricingServiceServer` double for testing the cross-service call without a real network
