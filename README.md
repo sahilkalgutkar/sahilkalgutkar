@@ -127,6 +127,16 @@ A dead-man's-switch monitoring platform for scheduled/batch jobs, built across t
 - CI across all three services (lint + tests on every push), Docker Compose locally, Kubernetes manifests for EKS
 - `React · TypeScript · Django · Go · Gin · PostgreSQL · Redis · Celery · Docker · Kubernetes`
 
+### [kvforge](https://github.com/sahilkalgutkar/kvforge) — In-memory key-value store engine, built from scratch in Rust
+[![CI](https://github.com/sahilkalgutkar/kvforge/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/kvforge/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/kvforge/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/kvforge)
+
+A Redis-shaped storage engine — RESP-inspired wire protocol, TTLs, an append-only log for crash durability — built on nothing but the standard library and tokio, to understand a key-value store from the network layer down rather than wrap an existing one.
+- The AOF durability format reuses the wire protocol itself: each logged write is the same bytes a client would send, so the streaming decoder doubles as the replay parser and a crash mid-write naturally stops replay at the last whole command
+- Async tokio TCP server handling concurrent connections against one shared store; verified end-to-end by running a real server, writing over a real socket, killing it, and confirming a second server replays the data back
+- `kvforge-cli` (REPL + one-shot modes) routes every command through the exact same parser the server uses, so client and server can't drift apart on what a command means
+- `Rust · Tokio · Async I/O · Custom Binary Protocol · GitHub Actions`
+
 ### [SplitEasy](https://github.com/sahilkalgutkar/expense-splitter) — Expense-splitting app with automated settle-up
 [![CI](https://github.com/sahilkalgutkar/expense-splitter/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/expense-splitter/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/expense-splitter/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/expense-splitter)
