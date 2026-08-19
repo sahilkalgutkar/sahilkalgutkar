@@ -205,6 +205,16 @@ I built a legacy core-banking monolith and strangled it into microservices one r
 - Shipped with a real git-flow history — feature branches merged via PR, a tagged release, and two hotfixes for issues found while testing and in CI, not one commit on main
 - `C# · .NET Core · YARP · PostgreSQL · Cassandra · RabbitMQ · Serilog · ELK Stack · Terraform · Kubernetes · ArgoCD · GitHub Actions`
 
+### [advisor-match-service](https://github.com/sahilkalgutkar/advisor-match-service) — AI-based client-advisor matching API
+[![CI](https://github.com/sahilkalgutkar/advisor-match-service/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/advisor-match-service/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/advisor-match-service/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/advisor-match-service)
+
+I built this to work back through an AI-based matching system the way I first built one during an internship, this time with real infrastructure behind it: a **pandas/numpy** cleaning pipeline, **PyTorch**/**Hugging Face** sentence embeddings, and **hybrid Elasticsearch search** (kNN blended with BM25) behind a **Flask** API.
+- A hand-labeled eval harness measures real relevance against the current index — 90% hit@5, MRR 0.90 on the seed dataset, not an assumed number
+- Caught a genuine race condition smoke-testing the real docker-compose stack: two Gunicorn workers both trying to create the Elasticsearch index on boot
+- Terraform for GCP Cloud Run + Artifact Registry
+- `Python · Flask · PyTorch · Hugging Face Transformers · pandas · NumPy · Elasticsearch · Docker · Terraform · GitHub Actions`
+
 ---
 
 ## 🎓 Certifications & Education
