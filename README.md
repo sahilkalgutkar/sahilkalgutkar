@@ -117,6 +117,18 @@ Software Engineer, Production Support — Infosys                  Aug 2019 – 
 
 ## 📌 Featured Projects
 
+### [trust-platform](https://github.com/sahilkalgutkar/trust-platform) — Multi-tenant identity, entitlements, and a tamper-evident audit log
+[![CI](https://github.com/sahilkalgutkar/trust-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/trust-platform/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/trust-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/trust-platform)
+
+I build identity and entitlements infrastructure for a living, so I wrote a version of it I can actually show: an **OpenID Connect provider**, a **Zanzibar-style authorization service**, and a **hash-chained audit log** — implemented from the protocol up, not by configuring Spring Security's OAuth support or an authorization SDK.
+- Refresh tokens rotate and carry a family id: presenting one that has already been rotated revokes the whole lineage, because the provider cannot tell the thief from the victim and shouldn't guess
+- Permissions aren't stored, they're derived — a namespace declares that viewers are editors plus whoever can view the parent folder, and a check walks that at query time, so re-parenting a document changes its access with no write against the document
+- Multi-tenancy is enforced in the generated SQL via Hibernate's tenant discriminator, and the isolation suite gives both tenants the *same* client id and user email so a missing predicate returns the wrong row instead of nothing
+- The audit chain catches four distinct kinds of tampering, including editing only an indexed column — verified by `UPDATE`-ing a real Postgres table and asserting the verifier names the exact row
+- 431 tests (92% line / 86% branch); the adversarial half covers `alg:none`, HS256 key-confusion forgery, PKCE downgrade, confused-deputy code redemption, and cross-tenant replay
+- `Java 21 · Spring Boot · OAuth 2.0 / OIDC · PostgreSQL · Redis · Kafka · Testcontainers · Docker Compose`
+
 ### [raftlite](https://github.com/sahilkalgutkar/raftlite) — Raft consensus implemented from scratch in Go
 [![CI](https://github.com/sahilkalgutkar/raftlite/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/raftlite/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/raftlite/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/raftlite)
