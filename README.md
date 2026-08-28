@@ -117,6 +117,18 @@ Software Engineer, Production Support — Infosys                  Aug 2019 – 
 
 ## 📌 Featured Projects
 
+### [tenant-operator](https://github.com/sahilkalgutkar/tenant-operator) — A Kubernetes operator that provisions and continuously reconciles per-tenant namespaces
+[![CI](https://github.com/sahilkalgutkar/tenant-operator/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/tenant-operator/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/tenant-operator/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/tenant-operator)
+
+Every other project here deploys *onto* Kubernetes. This one extends it: a **custom resource**, a **reconcile loop**, **admission webhooks** and a **finalizer**, so that "create a tenant" becomes something the cluster API itself understands — eleven lines of YAML become a namespace, a tier-sized quota, a default-deny network policy, generated credentials, a Deployment and a Service, all kept that way.
+- The loop takes its finalizer *before* it creates anything, and provisions the quota and network policy *before* the workload — otherwise a crash orphans the namespace, or a tenant briefly runs unquota'd and reachable from every other namespace
+- Deletion blocks until the namespace is genuinely gone; owner references would delete the same objects, but asynchronously, so the Tenant would vanish from the API while its namespace was still terminating
+- It refuses to adopt anything it did not create — and inherits that rule on teardown, so a tenant pointed at another team's namespace will never delete it
+- Admission rejects a `:latest` image outright: a mutable tag means the spec no longer describes what is running, and no amount of reconciliation can detect that drift
+- The control loop is tested against a real `kube-apiserver` via envtest — provisioning, drift correction, tier upgrades, suspension, teardown — because a fake client accepts objects a real API server rejects
+- `Go · controller-runtime · CRDs · Admission Webhooks · Finalizers · Kustomize · cert-manager · envtest`
+
 ### [trust-platform](https://github.com/sahilkalgutkar/trust-platform) — Multi-tenant identity, entitlements, and a tamper-evident audit log
 [![CI](https://github.com/sahilkalgutkar/trust-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/trust-platform/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/trust-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/trust-platform)
