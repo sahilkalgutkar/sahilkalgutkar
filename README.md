@@ -117,6 +117,20 @@ Software Engineer, Production Support — Infosys                  Aug 2019 – 
 
 ## 📌 Featured Projects
 
+### [queryforge](https://github.com/sahilkalgutkar/queryforge) — A columnar SQL query engine written from the wire up in Rust
+[![CI](https://github.com/sahilkalgutkar/queryforge/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/queryforge/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/queryforge/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/queryforge)
+
+I wanted to know what actually happens between typing a query and getting rows back, so I wrote every stage of it: **lexer, parser, binder, cost-based optimiser, vectorised execution engine**, and my own **columnar file format** underneath. No `sqlparser`, no DataFusion, no Arrow, no Parquet — the whole workspace builds against the standard library alone, because an engine that wraps someone else's parser and someone else's format has skipped the two places the interesting decisions live.
+- The `.qfc` format puts a footer at the end holding each column chunk's byte range and its zone map, so a reader learns the whole layout in two seeks — which is what turns predicate pushdown from a plan rewrite into skipped I/O: 155x faster on a selective range over 500k rows, reading 3 row groups out of 62
+- Every chunk picks its own encoding by *measuring* the data rather than guessing from its type, because the right answer changes between row groups of the same column — RLE comes out 10x smaller than plain on a sorted column, a dictionary 4x smaller on a shuffled four-value string column
+- Constant folding deliberately stops at division by zero and integer overflow: folding those would let the plan-time answer differ from the run-time one, which is worse than not folding at all
+- A predicate is never pushed into the padded side of an outer join — doing so deletes rows that should have come back NULL-padded — and join reordering prefers a relation that *has* a join key over a smaller unrelated one, because an accidental cross product is not something a later choice recovers from
+- The benchmark runs every query twice, on the bound plan and the optimised one, and fails outright if the two disagree on the row count; a flattering speedup from a wrong answer is worse than no number
+- Sorting spills sorted runs to disk and merges them when the input outgrows memory, with a test asserting both paths return byte-identical output — the answer must not depend on whether the data fitted
+- 542 tests at 97% line coverage, and the README records the three bugs I actually hit, including a `LEFT JOIN` that dropped rows because its `ON` condition was applied after deciding what matched
+- `Rust · SQL · Columnar Storage · Query Optimisation · Vectorised Execution · Zone Maps · Zero Dependencies`
+
 ### [tenant-operator](https://github.com/sahilkalgutkar/tenant-operator) — A Kubernetes operator that provisions and continuously reconciles per-tenant namespaces
 [![CI](https://github.com/sahilkalgutkar/tenant-operator/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/tenant-operator/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/tenant-operator/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/tenant-operator)
