@@ -316,10 +316,6 @@ I built this to work back through an AI-based matching system the way I first bu
 </div>
 
 <div align="center">
-  <img src="https://github-readme-activity-graph.vercel.app/graph?username=sahilkalgutkar&bg_color=ffffff&color=3584E4&line=3584E4&point=222222&hide_border=true&area=true" width="98%" alt="Sahil's contribution activity graph" />
-</div>
-
-<div align="center">
   <img src="https://raw.githubusercontent.com/sahilkalgutkar/sahilkalgutkar/output/github-contribution-grid-snake.svg" alt="Contribution snake animation" width="98%" />
 </div>
 
