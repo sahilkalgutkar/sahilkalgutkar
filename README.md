@@ -117,6 +117,8 @@ Software Engineer, Production Support — Infosys                  Aug 2019 – 
 
 ## 📌 Featured Projects
 
+*These are meant to be cloned and run, not just read. A green CI badge only proves what CI runs, so I work through the README's own commands too — that is how several of the fixes below were found — and every host port these Compose stacks publish is overridable, so a stack still comes up on a laptop that already has Postgres, Redis or Elasticsearch bound.*
+
 ### [modelforge](https://github.com/sahilkalgutkar/modelforge) — A model-serving platform in Go, with an XGBoost scorer verified against XGBoost itself
 [![CI](https://github.com/sahilkalgutkar/modelforge/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/modelforge/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/modelforge/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/modelforge)
@@ -175,6 +177,7 @@ I build identity and entitlements infrastructure for a living, so I wrote a vers
 - Permissions aren't stored, they're derived — a namespace declares that viewers are editors plus whoever can view the parent folder, and a check walks that at query time, so re-parenting a document changes its access with no write against the document
 - Multi-tenancy is enforced in the generated SQL via Hibernate's tenant discriminator, and the isolation suite gives both tenants the *same* client id and user email so a missing predicate returns the wrong row instead of nothing
 - The audit chain catches four distinct kinds of tampering, including editing only an indexed column — verified by `UPDATE`-ing a real Postgres table and asserting the verifier names the exact row
+- Making the stack's host ports configurable surfaced a real coupling: the issuer was a hardcoded `localhost:8081`, so on a moved port the provider minted tokens claiming an issuer nothing was listening on and the authorization service refused them — correctly, since it compares `iss`. Static checks passed; only running the end-to-end flow caught it
 - 431 tests (92% line / 86% branch); the adversarial half covers `alg:none`, HS256 key-confusion forgery, PKCE downgrade, confused-deputy code redemption, and cross-tenant replay
 - `Java 21 · Spring Boot · OAuth 2.0 / OIDC · PostgreSQL · Redis · Kafka · Testcontainers · Docker Compose`
 
@@ -187,6 +190,7 @@ I built the Raft consensus algorithm from the paper — elections, log replicati
 - Pre-vote and a leader lease, with paired tests running the same partition both ways: with them an isolated node's term never moves, without them it climbs without bound and disrupts a healthy cluster on return
 - A chaos suite runs real nodes against real directories through random crashes, restarts and partitions, asserting one invariant — around 5,000 acknowledged writes across 40 rounds of failures, none lost
 - Two bugs only real sockets could find: a message field threaded through the algorithm but never encoded, and a lost snapshot stranding a follower forever — both fixed with tests that fail without the fix
+- A third failure was the test's fault, not the code's: the helper every test wrote through gave up on the first error from `Propose`, which quietly made all of them assert something Raft never promises — a leader deposed before its entry commits is an ordinary outcome the HTTP API already reports as a 503 — so it now re-resolves the leader and retries, like a real client
 - `Go · Raft · Distributed Systems · Custom Binary Protocol · Prometheus · Docker Compose · GitHub Actions`
 
 ### [PipelineOps](https://github.com/sahilkalgutkar/PipelineOps) — Polyglot job-monitoring & alerting platform
