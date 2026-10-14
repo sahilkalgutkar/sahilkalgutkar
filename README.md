@@ -119,6 +119,19 @@ Software Engineer, Production Support — Infosys                  Aug 2019 – 
 
 *These are meant to be cloned and run, not just read. A green CI badge only proves what CI runs, so I work through the README's own commands too — that is how several of the fixes below were found — and every host port these Compose stacks publish is overridable, so a stack still comes up on a laptop that already has Postgres, Redis or Elasticsearch bound.*
 
+### [txrace](https://github.com/sahilkalgutkar/txrace) — A JDBC interleaving explorer that finds races in the code on top of the database
+[![CI](https://github.com/sahilkalgutkar/txrace/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/txrace/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/txrace/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/txrace)
+
+Most race bugs in a backend live in service code, not in the database: read a row, check something, write. They pass every test, because tests send one request at a time. txrace runs concurrent transactions **one SQL statement at a time**, walks the orders they could run in under a preemption bound — the CHESS search, with statements as the steps and the database as the shared state — and reports any order whose outcome no serial run could produce, as a two-column trace that replays exactly.
+- Pointed at my own trust-platform, it confirmed a race I had suspected from reading the code: two concurrent refreshes of one token both succeeded, leaving two live tokens in a family and quietly defeating reuse detection. Modelling the fix's surroundings found a second one — revoking a family could miss a token being issued at that moment. Both are fixed upstream, with integration tests that race real HTTP requests
+- There is no invariant to write: the serial orders are the reference. The rule that took thought is rollbacks — a transaction the database refused (serialization failure, deadlock) left nothing behind and is excused, but one that gave up by its own logic is part of the ending, because giving up on what it read is exactly how a non-repeatable read shows
+- A statement waiting on a row lock held by a parked transaction would hang a naive scheduler, so it asks PostgreSQL (`pg_blocking_pids`) or H2 who the step is waiting behind, moves on, and waits out `deadlock_timeout` so the same schedule always fails the same deadlock victim
+- It reproduces Kleppmann's **Hermitage** table for PostgreSQL, all 30 cells, from scheduled runs, and measured the same table for H2, which Hermitage doesn't cover — its SERIALIZABLE lets write skew through, as H2's own docs say
+- Benchmarked honestly against a plain stress test: on simple races, 1,000 trials released together find the bug too, usually on the first. Where they differ is a fix that looked right and wasn't — released together, the stress test caught it in **2 of 3,000** trials and exploration on its **second order** — and in what a pass means: every order within the bound, rather than the luck of the run
+- `@RaceTest` makes it a JUnit 5 test: declare a starting state and the transactions, and the counterexample becomes the failure message. 191 tests at 96% line coverage, against H2 and an embedded PostgreSQL 18 with no Docker
+- `Java 21 · JDBC · PostgreSQL · H2 · Concurrency · Isolation Levels · Systematic Testing · JUnit 5`
+
 ### [modelforge](https://github.com/sahilkalgutkar/modelforge) — A model-serving platform in Go, with an XGBoost scorer verified against XGBoost itself
 [![CI](https://github.com/sahilkalgutkar/modelforge/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/modelforge/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/modelforge/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/modelforge)
@@ -178,7 +191,8 @@ I build identity and entitlements infrastructure for a living, so I wrote a vers
 - Multi-tenancy is enforced in the generated SQL via Hibernate's tenant discriminator, and the isolation suite gives both tenants the *same* client id and user email so a missing predicate returns the wrong row instead of nothing
 - The audit chain catches four distinct kinds of tampering, including editing only an indexed column — verified by `UPDATE`-ing a real Postgres table and asserting the verifier names the exact row
 - Making the stack's host ports configurable surfaced a real coupling: the issuer was a hardcoded `localhost:8081`, so on a moved port the provider minted tokens claiming an issuer nothing was listening on and the authorization service refused them — correctly, since it compares `iss`. Static checks passed; only running the end-to-end flow caught it
-- 431 tests (92% line / 86% branch); the adversarial half covers `alg:none`, HS256 key-confusion forgery, PKCE downgrade, confused-deputy code redemption, and cross-tenant replay
+- Two concurrent redemptions of one refresh token or authorization code both succeeded under READ COMMITTED, leaving two live tokens in a family so reuse detection never fired. I suspected it reading the code, modelled it in [txrace](https://github.com/sahilkalgutkar/txrace), confirmed it with an integration test that holds one request mid-transaction, and fixed it with a conditional `UPDATE … WHERE consumed_at IS NULL`. Family revocation had the mirror-image race, and now repeats a bulk update until it revokes nothing
+- 438 tests (92% line / 86% branch); the adversarial half covers `alg:none`, HS256 key-confusion forgery, PKCE downgrade, confused-deputy code redemption, and cross-tenant replay
 - `Java 21 · Spring Boot · OAuth 2.0 / OIDC · PostgreSQL · Redis · Kafka · Testcontainers · Docker Compose`
 
 ### [raftlite](https://github.com/sahilkalgutkar/raftlite) — Raft consensus implemented from scratch in Go
