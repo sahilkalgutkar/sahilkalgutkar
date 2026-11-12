@@ -119,19 +119,6 @@ Software Engineer, Production Support — Infosys                  Aug 2019 – 
 
 *These are meant to be cloned and run, not just read. A green CI badge only proves what CI runs, so I work through the README's own commands too — that is how several of the fixes below were found — and every host port these Compose stacks publish is overridable, so a stack still comes up on a laptop that already has Postgres, Redis or Elasticsearch bound.*
 
-### [txrace](https://github.com/sahilkalgutkar/txrace) — A JDBC interleaving explorer that finds races in the code on top of the database
-[![CI](https://github.com/sahilkalgutkar/txrace/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/txrace/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/sahilkalgutkar/txrace/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/txrace)
-
-Most race bugs in a backend live in service code, not in the database: read a row, check something, write. They pass every test, because tests send one request at a time. txrace runs concurrent transactions **one SQL statement at a time**, walks the orders they could run in under a preemption bound — the CHESS search, with statements as the steps and the database as the shared state — and reports any order whose outcome no serial run could produce, as a two-column trace that replays exactly.
-- Pointed at my own trust-platform, it confirmed a race I had suspected from reading the code: two concurrent refreshes of one token both succeeded, leaving two live tokens in a family and quietly defeating reuse detection. Modelling the fix's surroundings found a second one — revoking a family could miss a token being issued at that moment. Both are fixed upstream, with integration tests that race real HTTP requests
-- There is no invariant to write: the serial orders are the reference. The rule that took thought is rollbacks — a transaction the database refused (serialization failure, deadlock) left nothing behind and is excused, but one that gave up by its own logic is part of the ending, because giving up on what it read is exactly how a non-repeatable read shows
-- A statement waiting on a row lock held by a parked transaction would hang a naive scheduler, so it asks PostgreSQL (`pg_blocking_pids`) or H2 who the step is waiting behind, moves on, and waits out `deadlock_timeout` so the same schedule always fails the same deadlock victim
-- It reproduces Kleppmann's **Hermitage** table for PostgreSQL, all 30 cells, from scheduled runs, and measured the same table for H2, which Hermitage doesn't cover — its SERIALIZABLE lets write skew through, as H2's own docs say
-- Benchmarked honestly against a plain stress test: on simple races, 1,000 trials released together find the bug too, usually on the first. Where they differ is a fix that looked right and wasn't — released together, the stress test caught it in **2 of 4,000** trials and exploration on its **second order** — and in what a pass means: every order within the bound, rather than the luck of the run
-- `@RaceTest` makes it a JUnit 5 test: declare a starting state and the transactions, and the counterexample becomes the failure message. 191 tests at 96% line coverage, against H2 and an embedded PostgreSQL 18 with no Docker
-- `Java 21 · JDBC · PostgreSQL · H2 · Concurrency · Isolation Levels · Systematic Testing · JUnit 5`
-
 ### [modelforge](https://github.com/sahilkalgutkar/modelforge) — A model-serving platform in Go, with an XGBoost scorer verified against XGBoost itself
 [![CI](https://github.com/sahilkalgutkar/modelforge/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/modelforge/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/sahilkalgutkar/modelforge/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/modelforge)
@@ -154,6 +141,73 @@ My other ML projects *call* a model. This one is the layer underneath them: the 
 - Repeated auth failures are **throttled**, and scoping that claim honestly was the work: it is not brute-force protection against 256-bit tokens, it bounds the *cost* of failures — 200 bad-token requests now produce 6 log lines instead of 200. I first checked the limit before authenticating; the test showed that refuses a correct credential when an address is shared behind a NAT, so authentication runs first and a valid token is never throttled. The tracking table fails open when saturated, so an attacker cannot fill it to lock everyone out
 - Every command and number in the README was run against a live server before being written down, including a `known limitations` section — 89.9% coverage, and the suite fails rather than skips when Postgres is missing
 - `Go · XGBoost · Model Serving · Canary Deployments · Shadow Traffic · Drift Detection (PSI) · Scoped Token Auth · Postgres · Prometheus`
+
+### [digest-bot](https://github.com/sahilkalgutkar/digest-bot) — RAG chatbot over RSS/changelog feeds, with an eval that gates CI
+[![CI](https://github.com/sahilkalgutkar/digest-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/digest-bot/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/digest-bot/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/digest-bot)
+
+I built a retrieval-augmented chatbot on the **Claude API** that answers questions over live RSS and changelog feeds, to work on the parts of RAG most tutorials skip: freshness, dedup, and knowing whether retrieval actually works.
+- The eval is 43 hand-written questions over a frozen snapshot of 55 Kubernetes, Go and Rust blog posts, scored as of the moment the snapshot was taken — so the number moves when retrieval changes, never because the calendar did
+- Its first run scored **23% recall@5**. Retrieval multiplied similarity by a steep age decay, so a month-old article kept almost none of its score, and the two newest posts took 112 of the 215 top-5 slots whatever the question was
+- Recency is now a capped blend — age can move a score by at most 5% — which took recall@5 to **98%** and recall@1 from 2% to **84%**. Switching recency off scores 100%; I kept the 5% so a newer release still wins a near-tie, and the README says plainly that four questions are too few to prove that
+- "Latest" questions keep an older near-duplicate in the corpus as the wrong answer — rustup 1.29.2 against 1.29.3 — so a top 5 holding both is not an answer, and only recall@1 counts
+- CI fails any change that drops recall@5 below 90%, without calling the model; a separate workflow checks that each generated answer cites the expected article
+- Answers must cite numbered sources and say so when nothing recent covers the question. Generation keeps only text blocks, because the model can open with a thinking block that has none — the old code read the first block and would have crashed on it
+- Ingestion polls each feed, skips articles it has already seen by GUID or URL, and extracts the article body before chunking and embedding into LanceDB
+- `Python · RAG · Anthropic Claude API · LanceDB · sentence-transformers · Evaluation · pytest · GitHub Actions`
+
+### [raftlite](https://github.com/sahilkalgutkar/raftlite) — Raft consensus implemented from scratch in Go
+[![CI](https://github.com/sahilkalgutkar/raftlite/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/raftlite/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/raftlite/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/raftlite)
+
+I built the Raft consensus algorithm from the paper — elections, log replication, snapshots, dynamic membership — and put a replicated key-value store on top, with **no third-party dependencies**: the wire codec, the write-ahead log and the metrics registry are all hand-written.
+- The algorithm is a pure state machine with no sockets, files or clock, so elections, log repair and snapshot installation are tested deterministically instead of by racing real processes
+- Pre-vote and a leader lease, with paired tests running the same partition both ways: with them an isolated node's term never moves, without them it climbs without bound and disrupts a healthy cluster on return
+- A chaos suite runs real nodes against real directories through random crashes, restarts and partitions, asserting one invariant — around 5,000 acknowledged writes across 40 rounds of failures, none lost
+- Two bugs only real sockets could find: a message field threaded through the algorithm but never encoded, and a lost snapshot stranding a follower forever — both fixed with tests that fail without the fix
+- A third failure was the test's fault, not the code's: the helper every test wrote through gave up on the first error from `Propose`, which quietly made all of them assert something Raft never promises — a leader deposed before its entry commits is an ordinary outcome the HTTP API already reports as a 503 — so it now re-resolves the leader and retries, like a real client
+- `Go · Raft · Distributed Systems · Custom Binary Protocol · Prometheus · Docker Compose · GitHub Actions`
+
+### [trust-platform](https://github.com/sahilkalgutkar/trust-platform) — Multi-tenant identity, entitlements, and a tamper-evident audit log
+[![CI](https://github.com/sahilkalgutkar/trust-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/trust-platform/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/trust-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/trust-platform)
+
+I build identity and entitlements infrastructure for a living, so I wrote a version of it I can actually show: an **OpenID Connect provider**, a **Zanzibar-style authorization service**, and a **hash-chained audit log** — implemented from the protocol up, not by configuring Spring Security's OAuth support or an authorization SDK.
+- Refresh tokens rotate and carry a family id: presenting one that has already been rotated revokes the whole lineage, because the provider cannot tell the thief from the victim and shouldn't guess
+- Permissions aren't stored, they're derived — a namespace declares that viewers are editors plus whoever can view the parent folder, and a check walks that at query time, so re-parenting a document changes its access with no write against the document
+- Multi-tenancy is enforced in the generated SQL via Hibernate's tenant discriminator, and the isolation suite gives both tenants the *same* client id and user email so a missing predicate returns the wrong row instead of nothing
+- The audit chain catches four distinct kinds of tampering, including editing only an indexed column — verified by `UPDATE`-ing a real Postgres table and asserting the verifier names the exact row
+- Making the stack's host ports configurable surfaced a real coupling: the issuer was a hardcoded `localhost:8081`, so on a moved port the provider minted tokens claiming an issuer nothing was listening on and the authorization service refused them — correctly, since it compares `iss`. Static checks passed; only running the end-to-end flow caught it
+- Two concurrent redemptions of one refresh token or authorization code both succeeded under READ COMMITTED, leaving two live tokens in a family so reuse detection never fired. I suspected it reading the code, modelled it in [txrace](https://github.com/sahilkalgutkar/txrace), confirmed it with an integration test that holds one request mid-transaction, and fixed it with a conditional `UPDATE … WHERE consumed_at IS NULL`. Family revocation had the mirror-image race, and now repeats a bulk update until it revokes nothing
+- 438 tests (92% line / 86% branch); the adversarial half covers `alg:none`, HS256 key-confusion forgery, PKCE downgrade, confused-deputy code redemption, and cross-tenant replay
+- `Java 21 · Spring Boot · OAuth 2.0 / OIDC · PostgreSQL · Redis · Kafka · Testcontainers · Docker Compose`
+
+### [advisor-match-service](https://github.com/sahilkalgutkar/advisor-match-service) — AI-based client-advisor matching API
+[![CI](https://github.com/sahilkalgutkar/advisor-match-service/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/advisor-match-service/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/advisor-match-service/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/advisor-match-service)
+
+I built this to work back through an AI-based matching system the way I first built one during an internship, this time with real infrastructure behind it: a **pandas/numpy** cleaning pipeline, **PyTorch**/**Hugging Face** sentence embeddings, and **hybrid Elasticsearch search** (kNN blended with BM25) behind a **Flask** API.
+- A hand-labeled eval harness measures real relevance against the current index — 90% hit@5, MRR 0.90 on the seed dataset, not an assumed number
+- Caught a genuine race condition smoke-testing the real docker-compose stack: two Gunicorn workers both trying to create the Elasticsearch index on boot
+- Terraform for GCP Cloud Run + Artifact Registry
+- `Python · Flask · PyTorch · Hugging Face Transformers · pandas · NumPy · Elasticsearch · Docker · Terraform · GitHub Actions`
+
+### [txrace](https://github.com/sahilkalgutkar/txrace) — A JDBC interleaving explorer that finds races in the code on top of the database
+[![CI](https://github.com/sahilkalgutkar/txrace/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/txrace/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/sahilkalgutkar/txrace/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/txrace)
+
+Most race bugs in a backend live in service code, not in the database: read a row, check something, write. They pass every test, because tests send one request at a time. txrace runs concurrent transactions **one SQL statement at a time**, walks the orders they could run in under a preemption bound — the CHESS search, with statements as the steps and the database as the shared state — and reports any order whose outcome no serial run could produce, as a two-column trace that replays exactly.
+- Pointed at my own trust-platform, it confirmed a race I had suspected from reading the code: two concurrent refreshes of one token both succeeded, leaving two live tokens in a family and quietly defeating reuse detection. Modelling the fix's surroundings found a second one — revoking a family could miss a token being issued at that moment. Both are fixed upstream, with integration tests that race real HTTP requests
+- There is no invariant to write: the serial orders are the reference. The rule that took thought is rollbacks — a transaction the database refused (serialization failure, deadlock) left nothing behind and is excused, but one that gave up by its own logic is part of the ending, because giving up on what it read is exactly how a non-repeatable read shows
+- A statement waiting on a row lock held by a parked transaction would hang a naive scheduler, so it asks PostgreSQL (`pg_blocking_pids`) or H2 who the step is waiting behind, moves on, and waits out `deadlock_timeout` so the same schedule always fails the same deadlock victim
+- It reproduces Kleppmann's **Hermitage** table for PostgreSQL, all 30 cells, from scheduled runs, and measured the same table for H2, which Hermitage doesn't cover — its SERIALIZABLE lets write skew through, as H2's own docs say
+- Benchmarked honestly against a plain stress test: on simple races, 1,000 trials released together find the bug too, usually on the first. Where they differ is a fix that looked right and wasn't — released together, the stress test caught it in **2 of 4,000** trials and exploration on its **second order** — and in what a pass means: every order within the bound, rather than the luck of the run
+- `@RaceTest` makes it a JUnit 5 test: declare a starting state and the transactions, and the counterexample becomes the failure message. 191 tests at 96% line coverage, against H2 and an embedded PostgreSQL 18 with no Docker
+- `Java 21 · JDBC · PostgreSQL · H2 · Concurrency · Isolation Levels · Systematic Testing · JUnit 5`
+
+---
+
+## 🧰 More Projects
 
 ### [queryforge](https://github.com/sahilkalgutkar/queryforge) — A columnar SQL query engine written from the wire up in Rust
 [![CI](https://github.com/sahilkalgutkar/queryforge/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/queryforge/actions/workflows/ci.yml)
@@ -180,32 +234,6 @@ Every other project here deploys *onto* Kubernetes. This one extends it: a **cus
 - Admission rejects a `:latest` image outright: a mutable tag means the spec no longer describes what is running, and no amount of reconciliation can detect that drift
 - The control loop is tested against a real `kube-apiserver` via envtest — provisioning, drift correction, tier upgrades, suspension, teardown — because a fake client accepts objects a real API server rejects
 - `Go · controller-runtime · CRDs · Admission Webhooks · Finalizers · Kustomize · cert-manager · envtest`
-
-### [trust-platform](https://github.com/sahilkalgutkar/trust-platform) — Multi-tenant identity, entitlements, and a tamper-evident audit log
-[![CI](https://github.com/sahilkalgutkar/trust-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/trust-platform/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/sahilkalgutkar/trust-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/trust-platform)
-
-I build identity and entitlements infrastructure for a living, so I wrote a version of it I can actually show: an **OpenID Connect provider**, a **Zanzibar-style authorization service**, and a **hash-chained audit log** — implemented from the protocol up, not by configuring Spring Security's OAuth support or an authorization SDK.
-- Refresh tokens rotate and carry a family id: presenting one that has already been rotated revokes the whole lineage, because the provider cannot tell the thief from the victim and shouldn't guess
-- Permissions aren't stored, they're derived — a namespace declares that viewers are editors plus whoever can view the parent folder, and a check walks that at query time, so re-parenting a document changes its access with no write against the document
-- Multi-tenancy is enforced in the generated SQL via Hibernate's tenant discriminator, and the isolation suite gives both tenants the *same* client id and user email so a missing predicate returns the wrong row instead of nothing
-- The audit chain catches four distinct kinds of tampering, including editing only an indexed column — verified by `UPDATE`-ing a real Postgres table and asserting the verifier names the exact row
-- Making the stack's host ports configurable surfaced a real coupling: the issuer was a hardcoded `localhost:8081`, so on a moved port the provider minted tokens claiming an issuer nothing was listening on and the authorization service refused them — correctly, since it compares `iss`. Static checks passed; only running the end-to-end flow caught it
-- Two concurrent redemptions of one refresh token or authorization code both succeeded under READ COMMITTED, leaving two live tokens in a family so reuse detection never fired. I suspected it reading the code, modelled it in [txrace](https://github.com/sahilkalgutkar/txrace), confirmed it with an integration test that holds one request mid-transaction, and fixed it with a conditional `UPDATE … WHERE consumed_at IS NULL`. Family revocation had the mirror-image race, and now repeats a bulk update until it revokes nothing
-- 438 tests (92% line / 86% branch); the adversarial half covers `alg:none`, HS256 key-confusion forgery, PKCE downgrade, confused-deputy code redemption, and cross-tenant replay
-- `Java 21 · Spring Boot · OAuth 2.0 / OIDC · PostgreSQL · Redis · Kafka · Testcontainers · Docker Compose`
-
-### [raftlite](https://github.com/sahilkalgutkar/raftlite) — Raft consensus implemented from scratch in Go
-[![CI](https://github.com/sahilkalgutkar/raftlite/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/raftlite/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/sahilkalgutkar/raftlite/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/raftlite)
-
-I built the Raft consensus algorithm from the paper — elections, log replication, snapshots, dynamic membership — and put a replicated key-value store on top, with **no third-party dependencies**: the wire codec, the write-ahead log and the metrics registry are all hand-written.
-- The algorithm is a pure state machine with no sockets, files or clock, so elections, log repair and snapshot installation are tested deterministically instead of by racing real processes
-- Pre-vote and a leader lease, with paired tests running the same partition both ways: with them an isolated node's term never moves, without them it climbs without bound and disrupts a healthy cluster on return
-- A chaos suite runs real nodes against real directories through random crashes, restarts and partitions, asserting one invariant — around 5,000 acknowledged writes across 40 rounds of failures, none lost
-- Two bugs only real sockets could find: a message field threaded through the algorithm but never encoded, and a lost snapshot stranding a follower forever — both fixed with tests that fail without the fix
-- A third failure was the test's fault, not the code's: the helper every test wrote through gave up on the first error from `Propose`, which quietly made all of them assert something Raft never promises — a leader deposed before its entry commits is an ordinary outcome the HTTP API already reports as a 503 — so it now re-resolves the leader and retries, like a real client
-- `Go · Raft · Distributed Systems · Custom Binary Protocol · Prometheus · Docker Compose · GitHub Actions`
 
 ### [PipelineOps](https://github.com/sahilkalgutkar/PipelineOps) — Polyglot job-monitoring & alerting platform
 [![CI](https://github.com/sahilkalgutkar/PipelineOps/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/PipelineOps/actions/workflows/ci.yml)
@@ -243,16 +271,6 @@ I built a group expense-splitting app (**NestJS/Prisma** API, **React/TypeScript
 
 I built this site itself on Next.js (App Router), serving project data through an Apollo Server route handler backed by Supabase, with a seed-data fallback so it runs fully offline.
 - `Next.js · Apollo Server · Supabase · Tailwind CSS · GitHub Actions · Vercel`
-
-### [DigestBot](https://github.com/sahilkalgutkar/digest-bot) — RAG chatbot over a rolling window of RSS/changelog feeds
-[![CI](https://github.com/sahilkalgutkar/digest-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/digest-bot/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/sahilkalgutkar/digest-bot/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/digest-bot)
-
-I built a retrieval-augmented chatbot that answers questions over live RSS/changelog feeds instead of a static corpus, to explore the parts of RAG most tutorials skip: freshness, dedup, and incremental indexing.
-- Hybrid retrieval blending vector similarity with a recency-decay weight, so answers favor fresh articles without ignoring older ones
-- Forced citations on every generated answer, checked against a hand-built evaluation set to catch regressions
-- Incremental ingestion pipeline: poll → dedup by GUID/URL → chunk → embed → index, run continuously against a rolling feed window
-- `Python · RAG · Vector Search · Anthropic · pytest · GitHub Actions`
 
 ### [Risk Signal Platform](https://github.com/sahilkalgutkar/risk-signal-platform) — Event-driven transaction risk-scoring platform
 [![CI](https://github.com/sahilkalgutkar/risk-signal-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/risk-signal-platform/actions/workflows/ci.yml)
@@ -294,16 +312,6 @@ I built a legacy core-banking monolith and strangled it into microservices one r
 - Serilog → Filebeat → Logstash → Elasticsearch → Kibana across all four services; Terraform for AKS/ACR, ArgoCD watching the manifests directly for GitOps deploys
 - Shipped with a real git-flow history — feature branches merged via PR, a tagged release, and two hotfixes for issues found while testing and in CI, not one commit on main
 - `C# · .NET Core · YARP · PostgreSQL · Cassandra · RabbitMQ · Serilog · ELK Stack · Terraform · Kubernetes · ArgoCD · GitHub Actions`
-
-### [advisor-match-service](https://github.com/sahilkalgutkar/advisor-match-service) — AI-based client-advisor matching API
-[![CI](https://github.com/sahilkalgutkar/advisor-match-service/actions/workflows/ci.yml/badge.svg)](https://github.com/sahilkalgutkar/advisor-match-service/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/sahilkalgutkar/advisor-match-service/branch/main/graph/badge.svg)](https://codecov.io/gh/sahilkalgutkar/advisor-match-service)
-
-I built this to work back through an AI-based matching system the way I first built one during an internship, this time with real infrastructure behind it: a **pandas/numpy** cleaning pipeline, **PyTorch**/**Hugging Face** sentence embeddings, and **hybrid Elasticsearch search** (kNN blended with BM25) behind a **Flask** API.
-- A hand-labeled eval harness measures real relevance against the current index — 90% hit@5, MRR 0.90 on the seed dataset, not an assumed number
-- Caught a genuine race condition smoke-testing the real docker-compose stack: two Gunicorn workers both trying to create the Elasticsearch index on boot
-- Terraform for GCP Cloud Run + Artifact Registry
-- `Python · Flask · PyTorch · Hugging Face Transformers · pandas · NumPy · Elasticsearch · Docker · Terraform · GitHub Actions`
 
 ---
 
